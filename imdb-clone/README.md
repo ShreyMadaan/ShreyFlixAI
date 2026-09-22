@@ -1,16 +1,114 @@
-# React + Vite
+# IMDb Clone
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern movie browsing and watchlist app inspired by IMDb, built with React and Vite. Users can explore popular and trending movies, view detailed information, add titles to a personal watchlist, and get AI-powered movie recommendations based on their saved list.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Browse popular and trending movies
+- Search for movies by title
+- View complete movie details and metadata
+- Add or remove movies from a persistent watchlist
+- Navigate between homepage, watchlist, and movie detail pages
+- AI-based recommendation suggestions using Groq
+- Responsive UI with a polished dark movie-themed design
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19
+- Vite
+- React Router
+- Axios
+- Tailwind CSS
+- Groq API for recommendations
 
-## Expanding the ESLint configuration
+## Project Structure
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+imdb-clone/
+├── public/
+├── src/
+│   ├── components/
+│   ├── features/
+│   ├── routes/
+│   ├── services/
+│   ├── App.css
+│   ├── App.jsx
+│   ├── index.css
+│   └── main.jsx
+├── index.html
+├── package.json
+├── vite.config.js
+├── eslint.config.js
+└── README.md
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+
+### Installation
+
+1. Clone the repository.
+2. Navigate to the project folder:
+
+```bash
+cd imdb-clone
+```
+
+3. Install dependencies:
+
+```bash
+npm install
+```
+
+### Environment Variables
+
+This app uses a Groq API key for movie recommendations. Create a `.env` file in the project root and add:
+
+```bash
+VITE_GROQ_API_KEY=your_groq_api_key_here
+```
+
+You can get your API key from the Groq cloud platform.
+
+### Run the app
+
+```bash
+npm run dev
+```
+
+The app will start in development mode and be available at the local Vite URL shown in the terminal.
+
+### Production build
+
+```bash
+npm run build
+```
+
+To preview the production build:
+
+```bash
+npm run preview
+```
+
+## Available Scripts
+
+```bash
+npm run dev      # Start Vite dev server
+npm run build    # Build the app for production
+npm run preview  # Preview the production build
+npm run lint     # Run ESLint checks
+```
+
+## Notes
+
+- The watchlist is stored in localStorage, so it persists across page refreshes in the browser.
+- Recommendation generation depends on the Groq API key being correctly configured.
+- The app is designed as a front-end movie browsing experience and can be extended with a backend or real database in the future.
+
+## License
+
+This project is for educational/demo purposes.
