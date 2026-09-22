@@ -1,0 +1,195 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import aiService from "../../services/aiService";
+
+const IMAGE_BASE = import.meta.env.VITE_TMDB_IMAGE_BASE;
+const GENRE_MAP = {
+  28: "Action",
+  12: "Adventure",
+  16: "Animation",
+  35: "Comedy",
+  80: "Crime",
+  18: "Drama",
+  14: "Fantasy",
+  27: "Horror",
+  10749: "Romance",
+  878: "Sci-Fi",
+  53: "Thriller",
+};
+function WatchListPage({ watchlist, removeFromWatchlist }) {
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("none");
+  const [genreFilter, setGenreFilter] = useState("all");
+  const [aiRecommendation, setAiRecommendation] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+
+  async function handleAskAI() {
+    try {
+      setAiLoading(true);
+      setAiRecommendation("");
+      const result = await aiService.getRecommendation(watchlist);
+      setAiRecommendation(result);
+    } catch (error) {
+      setAiRecommendation("Something went wrong. Please try again.");
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
+  if (watchlist.length === 0) {
+    return (
+      <div className="flex flex-col justify-center items-center h-[80vh] text-white gap-4">
+        <h1 className="text-3xl font-bold text-gray-400">
+          Your watchlist is empty
+        </h1>
+        <Link
+          className="px-6 py-2 bg-yellow-500 text-black font-bold rounded-lg hover:bg-yellow-400 transition"
+          to="/"
+        >
+          Browse Movies
+        </Link>
+      </div>
+    );
+  }
+
+  //filtering based on search
+  let filteredMovies = watchlist.filter((movie) =>
+    movie.title.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  //sorting on filtered Arr.
+  if (sortBy === "rating-high") {
+    filteredMovies = [...filteredMovies].sort(
+      (a, b) => b.vote_average - a.vote_average,
+    );
+  } else if (sortBy === "rating-low") {
+    filteredMovies = [...filteredMovies].sort(
+      (a, b) => a.vote_average - b.vote_average,
+    );
+  } else if (sortBy === "title-az") {
+    filteredMovies = [...filteredMovies].sort((a, b) =>
+      a.title.localeCompare(b.title),
+    );
+  } else if (sortBy === "title-za") {
+    filteredMovies = [...filteredMovies].sort((a, b) =>
+      b.title.localeCompare(a.title),
+    );
+  }
+
+  //filter by genre
+  if (genreFilter !== "all") {
+    filteredMovies = filteredMovies.filter(
+      (movie) =>
+        movie.genre_ids && movie.genre_ids.includes(Number(genreFilter)),
+    );
+  }
+
+  return (
+    <div className="p-8">
+      <h1 className="text-white text-3xl font-bold text-center mb-8">
+        My Watchlist ({watchlist.length})
+      </h1>
+      <div className="max-w-4xl mx-auto mb-6 flex flex-wrap items-center gap-4">
+        <input
+          className="flex-1 min-w-[200px] px-5 py-3 rounded-full bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-yellow-400 text-lg"
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search your watchlist..."
+          type="text"
+          value={search}
+        />
+        <select
+          className="px-4 py-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-yellow-400"
+          onChange={(e) => setSortBy(e.target.value)}
+          value={sortBy}
+        >
+          <option value="none">Sort by</option>
+          <option value="rating-high">Rating: High to Low</option>
+          <option value="rating-low">Rating: Low to High</option>
+          <option value="title-az">Title: A to Z</option>
+          <option value="title-za">Title: Z to A</option>
+        </select>
+
+        <select
+          className="px-4 py-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-yellow-400"
+          onChange={(e) => setGenreFilter(e.target.value)}
+          value={genreFilter}
+        >
+          <option value="all">All Genres</option>
+          {Object.entries(GENRE_MAP).map(([id, name]) => (
+            <option key={id} value={id}>
+              {name}
+            </option>
+          ))}
+        </select>
+      </div>
+            <div className="max-w-4xl mx-auto mb-6">
+        <button
+          className="px-6 py-3 bg-yellow-600 text-white font-bold rounded-lg hover:bg-yellow-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={aiLoading}
+          onClick={handleAskAI}
+        >
+          {aiLoading ? "Thinking..." : "🤖 Ask AI for Recommendations"}
+        </button>
+        {aiRecommendation && (
+          <div className="mt-4 p-5 bg-gray-800 rounded-xl border border-purple-500/30">
+            <h3 className="text-yellow-400 font-bold mb-3">
+              AI Recommendations
+            </h3>
+            <p className="text-gray-300 whitespace-pre-line leading-relaxed">
+              {aiRecommendation}
+            </p>
+          </div>
+        )}
+      </div>
+      <div className="max-w-4xl mx-auto">
+        {filteredMovies.map((movie) => {
+          const posterUrl = movie.poster_path
+            ? `${IMAGE_BASE}/w200${movie.poster_path}`
+            : "[https://via.placeholder.com/200x300?text=No+Image](https://via.placeholder.com/200x300?text=No+Image)";
+
+          return (
+            <div
+              key={movie.id}
+              className="flex items-center gap-6 bg-gray-900 rounded-xl p-4 mb-4 hover:bg-gray-800 transition"
+            >
+              <Link to="{`/movie/${movie.id}`}">
+                <img
+                  src={posterUrl}
+                  alt={movie.title}
+                  className="w-20 h-28 object-cover rounded-lg"
+                  loading="lazy"
+                />
+              </Link>
+              <div className="flex-1">
+                <Link to={`/movie/${movie.id}`}>
+                  <h3 className="text-white text-xl font-bold hover:text-yellow-400 transition">
+                    {movie.title}
+                  </h3>
+                </Link>
+                <div className="flex gap-4 mt-1">
+                  <span className="text-yellow-400 text-sm">
+                    {movie.vote_average.toFixed(1)}
+                  </span>
+                  <span className="text-gray-400 text-sm">
+                    {movie.release_date}
+                  </span>
+                </div>
+                <p className="text-gray-400 text-sm mt-2 line-clamp-2">
+                  {movie.overview}
+                </p>
+              </div>
+              <button
+                onClick={() => removeFromWatchlist(movie.id)}
+                className="text-red-400 hover:text-red-300 text-sm font-bold px-4 py-2 border border-red-400 rounded-lg hover:bg-red-400/10 transition"
+              >
+                Remove
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+export default WatchListPage;
