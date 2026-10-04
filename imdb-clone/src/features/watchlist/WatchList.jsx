@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import aiService from "../../services/aiService";
+import { useWatchlist } from "../../context/WatchlistContext";
 
 const IMAGE_BASE = import.meta.env.VITE_TMDB_IMAGE_BASE;
 const GENRE_MAP = {
@@ -16,12 +17,14 @@ const GENRE_MAP = {
   878: "Sci-Fi",
   53: "Thriller",
 };
-function WatchListPage({ watchlist, removeFromWatchlist }) {
+function WatchListPage() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("none");
   const [genreFilter, setGenreFilter] = useState("all");
   const [aiRecommendation, setAiRecommendation] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+
+  const { watchlist, removeFromWatchlist } = useWatchlist();
 
   async function handleAskAI() {
     try {
@@ -132,7 +135,7 @@ function WatchListPage({ watchlist, removeFromWatchlist }) {
         </button>
         {aiRecommendation && (
           <div className="mt-4 p-5 bg-gray-800 rounded-xl border border-purple-500/30">
-            <h3 className="text-yellow-400 font-bold mb-3">
+            <h3 className="text-purple-400 font-bold mb-3">
               AI Recommendations
             </h3>
             <p className="text-gray-300 whitespace-pre-line leading-relaxed">

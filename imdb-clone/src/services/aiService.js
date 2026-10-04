@@ -25,7 +25,7 @@ async function getRecommendation(watchlist) {
           content: prompt,
         },
       ],
-      temperature: 2,
+      temperature: 0.7,
     }),
   });
 

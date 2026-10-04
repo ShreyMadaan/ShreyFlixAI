@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import Loader from "../../components/ui/Loader";
 import MovieCard from "./MovieCard";
 import movieService from "../../services/movieService";
 import ErrorMessage from "../../components/ui/ErrorMessage";
@@ -7,11 +6,7 @@ import MovieCardShimmer from "../../components/ui/MovieCardShimmer";
 
 const shimmerMovies = Array.from({ length: 20 }, () => 1);
 
-export default function Movies({
-  addToWatchlist,
-  removeFromWatchlist,
-  isInWatchlist,
-}) {
+export default function Movies() {
   const [movies, setMovies] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,32 +27,45 @@ export default function Movies({
   }
 
   useEffect(() => {
+    let isCurrentRequest = true;
+    const query = search.trim();
+
     async function fetchMovies() {
       try {
         setLoading(true);
         setError(null);
-        const data = search.trim()
-          ? await movieService.getSearch(search, currentPage)
+        const data = query
+          ? await movieService.getSearch(query, currentPage)
           : await movieService.getPopular(currentPage);
-        if (data) {
+
+        if (isCurrentRequest && data) {
           setMovies(data.results);
+          setTotalPage(data.total_pages ?? 500);
         }
       } catch (err) {
-        setError(err);
+        if (isCurrentRequest) {
+          setError(err);
+        }
       } finally {
-        setLoading(false);
+        if (isCurrentRequest) {
+          setLoading(false);
+        }
       }
     }
-    fetchMovies();
-  }, [currentPage, search]); // it run on mount, change on currentPage/search
+
+    const timerId = setTimeout(() => {
+      fetchMovies();
+    }, query ? 1000 : 0);
+
+    return () => {
+      isCurrentRequest = false;
+      clearTimeout(timerId);
+    };
+  }, [search, currentPage]);
 
   if (error) {
     return <ErrorMessage message={error} />;
   }
-
-  // if (loading) {
-  //   return <Loader />;
-  // }
 
   return (
     <div className="p-6">
@@ -79,22 +87,16 @@ export default function Movies({
         <>
           {loading ? (
             <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-              {shimmerMovies.map((shim,index) => {
-                return <MovieCardShimmer key={index}/>;
-              })}
-            </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                {shimmerMovies.map((shim, index) => {
+                  return <MovieCardShimmer key={index} />;
+                })}
+              </div>
             </>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
               {movies.map((movie) => (
-                <MovieCard
-                  key={movie.id}
-                  movie={movie}
-                  addToWatchlist={addToWatchlist}
-                  removeFromWatchlist={removeFromWatchlist}
-                  isInWatchlist={isInWatchlist}
-                />
+                <MovieCard key={movie.id} movie={movie} />
               ))}
             </div>
           )}
